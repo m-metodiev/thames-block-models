@@ -1,11 +1,11 @@
 rm(list=ls())
 set.seed(2025)
 ### BEGIN greed ###
-source("../../codes/thames_funcs.R")
-Rcpp::sourceCpp("../../codes/compute_lps.cpp")
-Rcpp::sourceCpp("../../codes/compute_multinom_lps.cpp")
-source("../../codes/VBEM.R")
-sourceCpp("../../codes/VBEM.cpp")
+source("../Code/thames_funcs.R")
+Rcpp::sourceCpp("../Code/compute_lps.cpp")
+Rcpp::sourceCpp("../Code/compute_multinom_lps.cpp")
+source("../Code/VBEM.R")
+sourceCpp("../Code/VBEM.cpp")
 
 library(greed)
 

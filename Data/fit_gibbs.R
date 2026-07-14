@@ -1,8 +1,8 @@
 rm(list=ls())
-source("../../codes/functions.R")
+source("../Code/functions.R")
 
-Rcpp::sourceCpp("../../codes/fast_generate_sbm.cpp")
-Rcpp::sourceCpp("../../codes/gibbs.cpp")
+Rcpp::sourceCpp("../Code/fast_generate_sbm.cpp")
+Rcpp::sourceCpp("../Code/gibbs.cpp")
 
 load(file=paste0("data/adjmat_for_gibbs",".RData"))
 
@@ -11,7 +11,7 @@ for(j in 1:10){
   res_gibbs_list = list()
   for(i in 2:20){
     res_gibbs_list[[i-1]] = gibbs_sampler(adjmat_for_gibbs, i, init = "KMEANS", max_iterations = 12000,seed=i+j*50)
-    
+
     # burn-in of 2000
     res_gibbs_list[[i-1]]$clusterList = res_gibbs_list[[i-1]]$clusterList[-(1:2000)]
     res_gibbs_list[[i-1]]$lps = res_gibbs_list[[i-1]]$lps[-(1:2000)]

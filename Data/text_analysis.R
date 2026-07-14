@@ -1,9 +1,4 @@
-# install.packages("torch")
-# library(torch)
-# install_torch()
-# pkgs <- c("torch", "topicmodels.etm", "word2vec", "doc2vec", "udpipe", "uwot")
-# install.packages(pkgs)
-# Install if needed
+rm(list=ls())
 library(tm)
 library(torch)
 library(topicmodels.etm)
@@ -12,6 +7,7 @@ library(udpipe)
 library(cld3)
 library(SnowballC)
 library(dplyr)
+library(tidytext)
 library(topicmodels)
 
 # number of members in each components
@@ -36,11 +32,11 @@ all_languages[is_arabic] = "ar"
 
 # is_japanese <- grepl("[\u3040-\u309f\u30a0-\u30ff]", texts)
 # all_languages[is_japanese]
-# 
+#
 # is_chinese_likely <- function(text) {
 #   has_han  <- grepl("[\u4e00-\u9fff]", text)
 #   has_kana <- grepl("[\u3040-\u309f\u30a0-\u30ff]", text)
-#   
+#
 #   has_han & !has_kana
 # }
 # all_languages[is_chinese_likely(texts)]
@@ -55,14 +51,14 @@ df=as.data.frame(t(rbind(names(sort(table(all_languages),decreasing=TRUE)),
         "\\")))
 df[1:10,]
 # all_languages_truefalse = all_languages =="ja"
-# 
+#
 # names(all_languages_truefalse) = NULL
 # all_languages_truefalse[is.na(all_languages_truefalse)]=FALSE
 # all_languages[all_languages_truefalse][1:10]
-# 
+#
 # print(round(sort(table(sapply(all_languages, function(x) detect_language(x))),decreasing=TRUE)/
 #                 sum(sort(table(sapply(all_languages, function(x) detect_language(x))),decreasing=TRUE)),2))
-# 
+#
 # all_languages = unique(all_languages)
 # length(all_languages)
 
@@ -203,13 +199,13 @@ cleaned_texts_of_component_g <- gsub("\\b\\w{1,4}\\b", "", cleaned_texts_of_comp
 # library(udpipe)
 # model <- udpipe_download_model(language = "english")
 # ud_model <- udpipe_load_model(model$file_model)
-# 
+#
 # cleaned_texts_of_component_g <- sapply(cleaned_texts_of_component_g,
 #                                        function(text) paste(as.data.frame(udpipe_annotate(ud_model, x = text))$token[as.data.frame(udpipe_annotate(ud_model, x = text))$upos == "NOUN"], collapse = " "))
-#   
+#
 # annotation <- udpipe_annotate(ud_model, x = text)
 # anno_df <- as.data.frame(annotation)
-# 
+#
 # nouns <- anno_df$token[anno_df$upos == "NOUN"]
 # paste(nouns, collapse = " ")
 
@@ -249,79 +245,65 @@ tidy_df <- df %>%
 dtm <- document_term_matrix(document_term_frequencies(tidy_df))
 save(dtm,file=paste0("data/dtm",".RData"))
 load(file=paste0("data/dtm",".RData"))
-#dtm <- dtm[dtm_rowsums(dtm) > 0, ]
-
-##
-## Toy example without pretrained word embeddings
-##
-# model       <- ETM(k = 10, embeddings = 500, vocab = colnames(dtm))
-# optimizer   <- optim_adam(params = model$parameters, lr = 0.005, weight_decay = 0.0000012)
-# epochs      <- 40
-# 
-# overview    <- model$fit(data = dtm, optimizer = optimizer, epoch = epochs, batch_size = 1000)
-# terminology <- predict(model, type = "terms", top_n = 10)
-# thetas = predict(model, newdata = dtm)
-# save(terminology,file=paste0("terminology_component_",i,".RData"))
-# load(file=paste0("terminology_component_",i,".RData"))
-# 
-# save(thetas,file=paste0("thetas_",i,".RData"))
-# sapply(terminology,function(x) x$term)
-# terminology
-
-# senderreceivertext_cop28_clustered$doc_id = 1:nrow(senderreceivertext_cop28_clustered)
-# theta_colors = matrix(ncol=12,nrow=12)
-# theta_colors_prob = matrix(ncol=12,nrow=12)
-# for(g1 in 1:12){
-#   print(paste0("g1: ",g1))
-#   for(g2 in 1:12){
-#     print(paste0("g2: ",g2))
-#     selected_document_id = 
-#       senderreceivertext_cop28_clustered[(senderreceivertext_cop28_clustered$clustersender == g1)&
-#                                            (senderreceivertext_cop28_clustered$clusterreceiver == g2),"doc_id"]
-#     theta_g1g2 = thetas[as.numeric(rownames(thetas)) %in% selected_document_id$doc_id,]
-#     if(sum(as.numeric(rownames(thetas)) %in% selected_document_id$doc_id)!=1){
-#       theta_g1g2 = colSums(theta_g1g2)/nrow(theta_g1g2)
-#     } # no need to normalize if only 1 row
-#     if(sum(is.na(theta_g1g2))>0){
-#       next
-#     }
-#     theta_colors[g1,g2] = which.max(theta_g1g2)
-#     theta_colors_prob[g1,g2] = max(theta_g1g2)
-#   }
-# }
-
-# cl = apply(thetas,1,which.max)
-# sort(thetas[,1],decreasing=TRUE)[1:10]
-# hist(thetas)
-# summary(c(thetas))
-# image(thetas)
-# install.packages("topicmodels")
-library(topicmodels)
 dim(dtm)
 
 set.seed(2026)
-topictestlda = topicmodels::LDA(dtm, control = list(estimate.alpha = FALSE,  alpha = 1), k = 40)
+topictestlda = topicmodels::LDA(dtm, control = list(estimate.alpha = FALSE,  alpha = 1, seed=2026), k = 40)
 save(topictestlda,file="data/topictestlda.RData")
 #image(topictestlda@gamma)
 
 beta = exp(topictestlda@beta)
 rowSums(beta)
 colnames(beta) = colnames(dtm)
+
 terms <- function(beta,K,n=200,s=1){
   words = colnames(beta)
   ent = apply(beta,2,function(x){y = x/sum(x); 1+sum(y*log(y))/log(K)})
-  spec=matrix(0, dim(beta)[1], dim(beta)[2]) 
+  spec=matrix(0, dim(beta)[1], dim(beta)[2])
+  important_words_per_topic = list()
   for (k in 1:K){
     spec[k, ] = beta[k,] * ent^s
     Wk = words[order(spec[k, ],decreasing = TRUE)[1:n]]
     cat('* Topic',k,':'); print(paste(Wk,collapse = ', ')); cat('\n')
+    important_words_per_topic[[k]] = paste0("Summarize the following text using 3-5 english words, while not elaborating in any other way. ",paste(Wk,collapse = ', '))
   }
-  return(spec)
+  return(important_words_per_topic)
 }
-terms(beta,40)
+important_words_per_topic = terms(beta,40)
+
+
+library(ollamar)
+
+summaries_of_topics = list()
+for(k in 1:40){
+  summary_of_topic <- generate(
+    model = "gemma4",
+    prompt = important_words_per_topic[[k]],
+    temperature = 0,
+    seed = 2026,
+    output="text"
+  )
+  summaries_of_topics[[k]] = summary_of_topic
+}
+save(summaries_of_topics,file="data/summaries_of_topics.RData")
+load(file="data/summaries_of_topics.RData")
+# install.packages("ollamar")
+#
+# install.packages("ollamar")
+# library(ollamar)
+#
+# chat(
+#   list("Explain principal component analysis in simple terms"),
+#   model = "llama3"
+# )
+#
+# messages <- list(
+#   list(role = "user", content = "How are you doing?")
+# )
+# chat("llama3", messages)
 
 #terms(topictestlda, 10)
-# all very similar, though 
+# all very similar, though
 # 9=lossanddammage
 # 10=sadhguru
 # 13=regional media coverage and official messaging from the UAE, emphasizing themes such as sustainable development, international participation, and delivering climate commitments.
@@ -338,11 +320,11 @@ for(g1 in 1:12){
   for(g2 in 1:12){
     print(paste0("g2: ",g2))
     colnames(fullthetaplusclusters)[g1+(g2-1)*12] = paste0(g1,",",g2)
-    selected_document_id = 
+    selected_document_id =
       senderreceivertext_cop28_clustered[(senderreceivertext_cop28_clustered$clustersender == g1)&
                                            (senderreceivertext_cop28_clustered$clusterreceiver == g2),"doc_id"]
     theta_g1g2 = thetas[as.numeric(rownames(dtm)) %in% selected_document_id$doc_id,]
-    
+
     # if(sum(as.numeric(rownames(dtm)) %in% selected_document_id$doc_id)!=1){
     #   selected_dtm = dtm[as.numeric(rownames(dtm)) %in% selected_document_id$doc_id,]
     #   theta_g1g2 = colSums(theta_g1g2)/nrow(theta_g1g2)
@@ -367,92 +349,7 @@ for(g1 in 1:12){
   }
 }
 theta_colors[is.na(theta_colors)] = 0
-#theta_colors[(theta_colors!=9)&(theta_colors!=10)&(theta_colors!=13)&(theta_colors!=18)&(theta_colors!=20)] = 1
 save(theta_colors,file = "data/theta_colors.RData")
 save(theta_colors_prob,file="data/theta_colors_prob.RData")
-save(fullthetaplusclusters,file="data/fullthetaplusclusters.RData")
-load(file="data/fullthetaplusclusters.RData")
 fullthetaplusclusters[is.na(fullthetaplusclusters)]=0
-
-# truncated above 0.1
-fullthetaplusclusters[fullthetaplusclusters>0.1]=0.1
-
-
-# normalize rows
-fullthetaplusclusters = t(apply(fullthetaplusclusters,1,function(x) (x-mean(x))/sd(x)))
-
-library(RColorBrewer)
-library(pheatmap)
-rownames(fullthetaplusclusters) = c(" ",1:40)[-1]
-
-# manual clusters
-clusters <- rep(1:12,12)#as.numeric(substr(colnames(fullthetaplusclusters), 1, 2))
-#clusters[is.na(clusters)] <- as.numeric(substr(colnames(fullthetaplusclusters), 1, 1))[is.na(clusters)]
-
-#clusters = c(sapply(1:12,function(s) rep(s,12)))
-
-# row annotation (this creates the side bar)
-annotation_col <- data.frame(
-  Cluster = factor(clusters)
-)
-rownames(annotation_col) <- colnames(fullthetaplusclusters)
-
-viridis::viridis(10)
-#RColorBrewer::brewer.pal(10,"viridis")
-# colors for clusters
-ann_colors <- list(
-  Cluster = c("1" = viridis::viridis(12)[1],
-              "2" = viridis::viridis(12)[2],
-              "3" = viridis::viridis(12)[3],
-              "4" = viridis::viridis(12)[4],
-              "5" = viridis::viridis(12)[5],
-              "6" = viridis::viridis(12)[6],
-              "7" = viridis::viridis(12)[7],
-              "8" = viridis::viridis(12)[8],
-              "9" = viridis::viridis(12)[9],
-              "10" = viridis::viridis(12)[10],
-              "11" = viridis::viridis(12)[11],
-              "12" = viridis::viridis(12)[12])
-)
-
-pheatmap(fullthetaplusclusters,
-         cluster_rows = FALSE,
-         cluster_cols = FALSE,
-         gaps_col = (0:11)*12,
-         annotation_col=annotation_col,
-         annotation_colors = ann_colors)
-
-
-
-pheatmap(fullthetaplusclusters,
-         cluster_rows = TRUE,
-         cluster_cols = TRUE,
-         annotation_col=annotation_col,
-         annotation_colors = ann_colors)
-fullthetaplusclusters[fullthetaplusclusters==0]=0.001
-pheatmap(log(fullthetaplusclusters),
-         cluster_rows = FALSE,
-         cluster_cols = FALSE)
-which((apply(fullthetaplusclusters,1,max)>0.07)==TRUE)
-1/40
-1/40
-
-sapply(c(18,19,20,26,28,29),
-       function(g) unique(c(senderreceivertext_cop28_clustered_greed$sender.username[senderreceivertext_cop28_clustered_greed$clustersender==g],
-                            senderreceivertext_cop28_clustered_greed$receiver.username[senderreceivertext_cop28_clustered_greed$clusterreceiver==g])))
-
-sapply(c(1),
-       function(g) unique(c(senderreceivertext_cop28_clustered$sender.username[senderreceivertext_cop28_clustered$clustersender==g],
-                            senderreceivertext_cop28_clustered$receiver.username[senderreceivertext_cop28_clustered$clusterreceiver==g])))
-
-library(tm)
-library(wordcloud)
-library(slam)
-
-# term frequencies (sparse-safe)
-freq <- col_sums(dtm)
-
-# word cloud
-wordcloud(names(freq), freq, min.freq = 1000)
-
-texts[grepl("savesoil", texts, ignore.case = TRUE)]
+save(fullthetaplusclusters,file="data/fullthetaplusclusters.RData")

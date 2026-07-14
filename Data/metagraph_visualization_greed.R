@@ -1,3 +1,4 @@
+rm(list=ls())
 library(tidygraph)
 library(ggraph)
 library(igraph)
@@ -6,50 +7,8 @@ library(igraph)
 gephi_analysis = list("5"=.5667,"7"=.1254,"6"=.1067,"9"=.0653,"4"=.0385,"1"=.0066,"11"=.0005)
 sum(sapply(gephi_analysis,function(s) s))
 
-### BEGIN G12 ###
-# load(paste0('res_gibs_full_lps_','.Rda'))
-# load(file=paste0('res_gibbs_',ceiling(which.max(res_gibs_full_lps[,12-1]) / 10000),'.Rda'))
-# load(file="adjmat_for_gibbs.RData")
-# 
-# dim(adjmat_for_gibbs)
-# g=graph_from_adjacency_matrix(adjmat_for_gibbs)
-# 
-# lay=layout_with_drl(g)
-# coords <- lay
-# 
-# # convert to tidygraph
-# tg <- as_tbl_graph(g)
-# 
-# # attach coordinates to nodes
-# tg <- tg %>%
-#   mutate(
-#     x = coords[,1],
-#     y = coords[,2]
-#   )
-# 
-# # plot using manual layout
-# ggraph(tg, layout = "manual", x = x, y = y) +
-#   geom_edge_link(alpha = 0.1) +
-#   geom_node_point(size = 0.5) +
-#   theme_void()
-# 
-# plot(graph_from_adjacency_matrix(adjmat_for_gibbs),
-#      layout = layout_with_drl,
-#      vertex.size = 0,
-#      vertex.label = NA,
-#      edge.arrow.size = 0)
-# 
-# names(res_gibbs_list)=paste0("r",2:20)
-# 
-# res_gibbs_list_r12 = res_gibbs_list$r12
-# res_gibbs_list=NULL
-# map_r12 = res_gibbs_list_r12$clusterList[[which.max(res_gibbs_list_r12$lps)]]
-# table(map_r12)
-# length(table(map_r12))
-### END G12 ###
-
 ### BEGIN G37 greed ###
-load(file=paste0('res_greed','.Rda'))
+load(file=paste0('data/res_greed','.Rda'))
 map_greed_r37 = res@cl-1
 table(map_greed_r37)
 length(table(map_greed_r37))
@@ -61,6 +20,7 @@ clustering = res_clustering$clustering
 table(clustering)
 length(clustering)
 mu_hat_mle = matrix(nrow=37,ncol=37)
+load(file="data/adjmat_for_gibbs.RData")
 for(g in 1:37){
   print(paste0("g: ",g))
   for(k in 1:37){
@@ -72,8 +32,8 @@ for(g in 1:37){
   }
 }
 
-write.csv(as.data.frame(mu_hat_mle),file="mu_cop28_greed.csv")
-mu_hat_mle_greed = as.matrix(read.csv("mu_cop28_greed.csv")[,-1])
+write.csv(as.data.frame(mu_hat_mle),file="data/mu_cop28_greed.csv")
+mu_hat_mle_greed = as.matrix(read.csv("data/mu_cop28_greed.csv")[,-1])
 round(mu_hat_mle_greed*100,2)
 ### END Calculate mu_hat_mle for greed results ###
 
@@ -94,7 +54,7 @@ round(mu_hat_mle_greed*100,2)
 #     mu_hat_mle[g,k] = sum(adjmat_for_gibbs_dummy*adjmat_for_gibbs)/sum(adjmat_for_gibbs_dummy)
 #   }
 # }
-# 
+#
 # write.csv(as.data.frame(mu_hat_mle),file="mu_cop28.csv")
 # mu_hat_mle = as.matrix(read.csv("mu_cop28.csv")[,-1])
 # round(mu_hat_mle*100,2)
@@ -118,7 +78,7 @@ round(mu_hat_mle_greed*100,2)
 # )
 edges <- data.frame(
   from = c(rep("1",37),
-           rep("2",37), 
+           rep("2",37),
            rep("3",37),
            rep("4",37),
            rep("5",37),
@@ -154,14 +114,14 @@ edges <- data.frame(
            rep("35",37),
            rep("36",37),
            rep("37",37)),
-  to   = c(c(" ",1:37)[-1], 
-           c(" ",1:37)[-1], 
+  to   = c(c(" ",1:37)[-1],
            c(" ",1:37)[-1],
            c(" ",1:37)[-1],
            c(" ",1:37)[-1],
            c(" ",1:37)[-1],
-           c(" ",1:37)[-1], 
-           c(" ",1:37)[-1], 
+           c(" ",1:37)[-1],
+           c(" ",1:37)[-1],
+           c(" ",1:37)[-1],
            c(" ",1:37)[-1],
            c(" ",1:37)[-1],
            c(" ",1:37)[-1],
@@ -235,7 +195,7 @@ edges <- data.frame(
 # K=12
 # df <- reshape2::melt(t(mu_hat_mle))
 # colnames(mu_hat_mle)=NULL
-# colnames(df) <- c("x", "y", "probability") 
+# colnames(df) <- c("x", "y", "probability")
 # df$x = factor(df$x, levels = 1:K)
 # df$y = factor(df$y, levels = K:1)
 # p1 = ggplot(df, aes(x = x, y = y, fill = probability)) + geom_tile() + scale_x_discrete(expand = c(0, 0)) +
@@ -244,10 +204,10 @@ edges <- data.frame(
 #   )+ theme(
 #     axis.text.x = element_text(size = 10),
 #     axis.text.y = element_text(size = 10),
-#     axis.title.x = element_blank(), 
+#     axis.title.x = element_blank(),
 #     axis.title.y = element_blank(),
 #     legend.position = "none",
-#     plot.title = element_text(size=11), 
+#     plot.title = element_text(size=11),
 #     aspect.ratio = 1
 #   )+ labs(title = "Connectivity matrix mu")
 # p1
@@ -263,7 +223,7 @@ nodes <- data.frame(
   size = c(cluster_sizes)/100
 )
 
-load("senderreceivertext_cop28_clustered_greed.RData")
+load("data/senderreceivertext_cop28_clustered_greed.RData")
 
 
 graph <- tbl_graph(nodes = nodes, edges = edges, directed = TRUE)
@@ -285,48 +245,126 @@ sapply(1:37, function(g) senderreceivertext_cop28_clustered_greed$sender.usernam
     which.max(senderreceivertext_cop28_clustered_greed$user.followers[
       senderreceivertext_cop28_clustered_greed$clustersender==g])])
 
-V(graph)$name <- c("CGTN",
-                   "The\nNew\nYork\nTimes",
-                   "Ellie\nGoulding",
-                   "Hillary\nClinton",
-                   "Human\nRights\nWatch",
-                   "BBC\nNews\n(World)",
-                   "Amnesty\nInternational",
-                   "Narendra\nModi",
-                   " ",#"سكاي نيوز عربية",                 
-                   "EL\nPAÍS",
-                   "Rebel\nNews",
-                   "Maria\nSarungi\nTsehai",
-                   "ipbes",
-                   "Global\nCitizen",
-                   "Laurie\nGarrett",
-                   "Elizabeth\nMay",
-                  "Parents\nFor Future\n#EndFossil\nFuels",
-                   "Mr.\nClimate",
-                 "UN\nClimate\nChange",
-                   "Al\nGore",
-                   "Mike\nHudema",
-                   "Greenpeace",
-                   "Climate\nReality",
-                   "Greta\nThunberg",
-                   "United\nNations",
-                   "We\nDon't\nHave\nTime",
-                   "Reuters",
-                   "Sadhguru",
-                  "Gargi\n#SaveSoil",
-                  "SouravD. for\n#SaveSoil\n#Conscious\nPlanet",
-                   "Isha\nFoundation\nUSA",
-                   "Dubai\nOne",
-                   "Santhanam",
-                   "Office of\nthe Governor\nof California",    
+V(graph)$name <-  c("UN\nClimate\nChange",
+                    "We\nDon't\nHave\nTime",
+                    "Al\nGore",
+                    "Greenpeace",
+                    "Extinction\nRebellion\nXR\nGlobal",
+                    "Greta\nThunberg",
+                    "United\nNations",
+                    "Bloomberg",
+                    "Reuters",
+                    "SDG2030",
+                    "Amitav\nGhosh",
+                    "Laurie\nGarrett",
+                    "Elizabeth\nMay",
+                    "Mr.\nClimate",
+                    "Gargi\n#SaveSoil",
+                    "SouravD. for\n#SaveSoil\n#Conscious\nPlanet",
+                    "Isha\nFoundation\nUSA",
+                    "Santhanam",
+                    "Isha\nFoundation",
+                    "ANI",
+                    "Narendra\nModi",
+                    " ",
+                    "Bill", # 1
+                    "𝐑𝐞𝐚𝐥\n𝐌𝐀𝐒𝐇",
+                    "Office of\nthe Governor\nof California",
                     "The\nNew\nTimes\n(Rwanda)",
-                   "Vatican News",
-                   "Gerald\nNgao")
+                    "Department\nof\nState",
+                    "EL\nPAÍS",
+                    " ",
+                    " ",
+                    "Dia\nMirza", #2,3
+                    "Hillary\nClinton",
+                    "Ellie\nGoulding",
+                    "Human\nRights\nWatch",
+                    "The\nNew\nYork\nTimes",
+                    "NDTV",
+                    "CGTN")
 
-set.seed(2027)
+# includes the arabic names
+# V(graph)$name <-  c("UN\nClimate\nChange",
+#                     "We\nDon't\nHave\nTime",
+#                     "Al\nGore",
+#                     "Greenpeace",
+#                     "Extinction\nRebellion\nXR\nGlobal",
+#                     "Greta\nThunberg",
+#                     "United\nNations",
+#                     "Bloomberg",
+#                     "Reuters",
+#                     "SDG2030",
+#                     "Amitav\nGhosh",
+#                     "Laurie\nGarrett",
+#                     "Elizabeth\nMay",
+#                     "Mr.\nClimate",
+#                     "Gargi\n#SaveSoil",
+#                     "SouravD. for\n#SaveSoil\n#Conscious\nPlanet",
+#                     "Isha\nFoundation\nUSA",
+#                     "Santhanam",
+#                     "Isha\nFoundation",
+#                     "ANI",
+#                     "Narendra\nModi",
+#                     "سكاي نيوز عربية",
+#                     "Bill", # 1
+#                     "𝐑𝐞𝐚𝐥\n𝐌𝐀𝐒𝐇",
+#                     "Office of\nthe Governor\nof California",
+#                     "The\nNew\nTimes\n(Rwanda)",
+#                     "Department\nof\nState",
+#                     "EL\nPAÍS",
+#                     "إبراهيم بهزاد",
+#                     "عبدالله بن زايد",
+#                     "Dia\nMirza", #2,3
+#                     "Hillary\nClinton",
+#                     "Ellie\nGoulding",
+#                     "Human\nRights\nWatch",
+#                     "The\nNew\nYork\nTimes",
+#                     "NDTV",
+#                     "CGTN")
+
+# old names
+# V(graph)$name <- c("CGTN",
+#                    "The\nNew\nYork\nTimes",
+#                    "Ellie\nGoulding",
+#                    "Hillary\nClinton",
+#                    "Human\nRights\nWatch",
+#                    "BBC\nNews\n(World)",
+#                    "Amnesty\nInternational",
+#                    "Narendra\nModi",
+#                    " ",#"سكاي نيوز عربية",
+#                    "EL\nPAÍS",
+#                    "Rebel\nNews",
+#                    "Maria\nSarungi\nTsehai",
+#                    "ipbes",
+#                    "Global\nCitizen",
+#                    "Laurie\nGarrett",
+#                    "Elizabeth\nMay",
+#                   "Parents\nFor Future\n#EndFossil\nFuels",
+#                    "Mr.\nClimate",
+#                  "UN\nClimate\nChange",
+#                    "Al\nGore",
+#                    "Mike\nHudema",
+#                    "Greenpeace",
+#                    "Climate\nReality",
+#                    "Greta\nThunberg",
+#                    "United\nNations",
+#                    "We\nDon't\nHave\nTime",
+#                    "Reuters",
+#                    "Sadhguru",
+#                   "Gargi\n#SaveSoil",
+#                   "SouravD. for\n#SaveSoil\n#Conscious\nPlanet",
+#                    "Isha\nFoundation\nUSA",
+#                    "Dubai\nOne",
+#                    "Santhanam",
+#                    "Office of\nthe Governor\nof California",
+#                     "The\nNew\nTimes\n(Rwanda)",
+#                    "Vatican News",
+#                    "Gerald\nNgao")
+
+set.seed(2026)
 V(graph)$group = rep("x",37)
-V(graph)$group[c(19,20)]="y"
-V(graph)$group[c(28,29,30,31)]="z"
+V(graph)$group[c(1,3)]="y"
+V(graph)$group[c(15,16,17,19)]="z"
 plot_cop28_greedsolution = ggraph(graph, layout = "fr") +
   geom_edge_link(aes(width = weight), alpha = 0.7,
                  arrow = arrow(type = "closed", length = unit(8, "mm"))
@@ -345,17 +383,17 @@ plot_cop28_greedsolution = ggraph(graph, layout = "fr") +
   ))
 plot_cop28_greedsolution
 
-ggsave("plot_cop28_greedsolution.png",
+ggsave("atelier/plot_cop28_greedsolution.png",
        plot_cop28_greedsolution,width=9,height=9,device="png",dpi = 800)
 
 # mu=mu_hat_mle
-# 
+#
 # df <- reshape2::melt(t(mu))
 # K=12
-# colnames(df) <- c("x", "y", "probability") 
+# colnames(df) <- c("x", "y", "probability")
 # df$x = factor(df$x, levels = 1:K)
 # df$y = factor(df$y, levels = K:1)
-# 
+#
 # ggraph::ggraph()
 # p1 = ggplot(df, aes(x = x, y = y, fill = probability)) + geom_tile() + scale_x_discrete(expand = c(0, 0)) +
 #   scale_y_discrete(expand = c(0, 0)) + scale_fill_gradient(low = "white", high = "red", limits=c(0, 1)
@@ -364,18 +402,18 @@ ggsave("plot_cop28_greedsolution.png",
 #   )+ theme(
 #     axis.text.x = element_text(size = 10),
 #     axis.text.y = element_text(size = 10),
-#     axis.title.x = element_blank(), 
+#     axis.title.x = element_blank(),
 #     axis.title.y = element_blank(),
 #     legend.position = "none",
-#     plot.title = element_text(size=11), 
+#     plot.title = element_text(size=11),
 #     aspect.ratio = 1
-#   )+ labs(title = "connectivity matrix") 
+#   )+ labs(title = "connectivity matrix")
 # p1
 
 to_latex_matrix <- function(mat, env = "bmatrix") {
   rows <- apply(mat, 1, function(x) paste(x, collapse = " & "))
   body <- paste(rows, collapse = " \\ ")
-  
+
   for(i in rows){
     cat(paste0(i,"\\\\\n"))
   }
