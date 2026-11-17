@@ -208,4 +208,4 @@ plot_cop28_thamessolution = ggraph(graph, layout = "fr") +
 plot_cop28_thamessolution
 
 ggsave("atelier/plot_cop28_thamessolution.png",
-       plot_cop28_thamessolution,width=6,height=6,device="png",dpi = 600)
+       plot_cop28_thamessolution,width=6,height=6,device="png",dpi = 200)

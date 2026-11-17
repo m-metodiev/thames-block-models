@@ -361,6 +361,11 @@ V(graph)$name <-  c("UN\nClimate\nChange",
 #                    "Vatican News",
 #                    "Gerald\nNgao")
 
+my_theme <- theme_bw() +
+  theme(strip.background = element_rect(fill = "white"), text = element_text(face="bold", size=12),
+  )
+theme_set(my_theme)
+
 set.seed(2026)
 V(graph)$group = rep("x",37)
 V(graph)$group[c(1,3)]="y"
@@ -384,7 +389,7 @@ plot_cop28_greedsolution = ggraph(graph, layout = "fr") +
 plot_cop28_greedsolution
 
 ggsave("atelier/plot_cop28_greedsolution.png",
-       plot_cop28_greedsolution,width=9,height=9,device="png",dpi = 800)
+       plot_cop28_greedsolution,width=9,height=9,device="png",dpi = 200)
 
 # mu=mu_hat_mle
 #
